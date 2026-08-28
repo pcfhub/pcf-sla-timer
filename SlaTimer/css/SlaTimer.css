@@ -1,0 +1,267 @@
+/*
+ * Every rule is scoped under the control's own class.
+ *
+ * A code component shares a document with the host app and with every other
+ * control on the form, so a bare `span { … }` here restyles the page it was
+ * dropped onto. The platform does not sandbox this for you.
+ */
+
+/*
+ * The palette, as Fluent's design tokens with literal fallbacks.
+ *
+ * A standard control cannot mount a `FluentProvider` — the provider is React
+ * and this is not — and the usual conclusion from that is that Fluent's styling
+ * is out of reach, so the control invents its own colours and ends up looking
+ * pasted onto the form. The conclusion is wrong. `FluentProvider` is what
+ * *emits* the theme as CSS custom properties, and a model-driven form already
+ * mounts one above every code component on the page. Nothing has to be mounted
+ * in order to read them.
+ *
+ * So the token wins where the host publishes it — the control then follows the
+ * app's theme *and its brand colour* with no code — and the literal carries the
+ * hosts that publish nothing, which includes canvas apps and PCFHub's demo
+ * harness. The fallbacks are Fluent's web light theme, read out of
+ * `@fluentui/tokens` rather than eyeballed: a value one step off on the neutral
+ * ramp is invisible alone and obvious beside the real thing.
+ */
+.SlaTimer {
+    --SlaTimer-background: var(--colorNeutralBackground3, #f5f5f5);
+    --SlaTimer-stroke: var(--colorTransparentStroke, transparent);
+    --SlaTimer-stroke-invalid: var(--colorPaletteRedBorder2, #d13438);
+    --SlaTimer-foreground: var(--colorNeutralForeground1, #242424);
+    --SlaTimer-foreground-secondary: var(--colorNeutralForeground3, #616161);
+    --SlaTimer-foreground-danger: var(--colorPaletteRedForeground1, #bc2f32);
+
+    /*
+     * The three states, as the palette foregrounds Fluent reserves for exactly
+     * this. They are the `Foreground1` ramp rather than the `Background`
+     * one because this is text: the `1` foregrounds are the shades picked to
+     * clear 4.5:1 on a neutral surface, which the background shades are not.
+     */
+    --SlaTimer-ok: var(--colorPaletteGreenForeground1, #0e700e);
+    --SlaTimer-warning: var(--colorPaletteDarkOrangeForeground1, #c43501);
+    --SlaTimer-overdue: var(--colorPaletteRedForeground1, #bc2f32);
+
+    --SlaTimer-radius: var(--borderRadiusMedium, 4px);
+    --SlaTimer-font-family: var(
+        --fontFamilyBase,
+        "Segoe UI",
+        "Segoe UI Web (West European)",
+        -apple-system,
+        BlinkMacSystemFont,
+        Roboto,
+        "Helvetica Neue",
+        sans-serif
+    );
+    --SlaTimer-font-size: var(--fontSizeBase300, 14px);
+    --SlaTimer-line-height: var(--lineHeightBase300, 20px);
+    --SlaTimer-font-size-caption: var(--fontSizeBase200, 12px);
+    --SlaTimer-line-height-caption: var(--lineHeightBase200, 16px);
+
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+    font-family: var(--SlaTimer-font-family);
+    color: var(--SlaTimer-foreground);
+}
+
+/*
+ * The dark fallbacks, chosen from `fluentDesignLanguage.isDarkTheme` in
+ * `index.ts` rather than from `prefers-color-scheme`.
+ *
+ * The media query is the obvious hook and it answers the wrong question: a
+ * model-driven app carries its own theme and the operating system's setting
+ * says nothing about it, so an OS-dark machine on a light app would get #141414
+ * behind the form's white.
+ *
+ * Only the fallbacks change here. A host that emits the tokens is already
+ * handing over its own dark values through the `var()`, and this block never
+ * takes effect there.
+ */
+.SlaTimer--dark {
+    --SlaTimer-background: var(--colorNeutralBackground3, #141414);
+    --SlaTimer-stroke-invalid: var(--colorPaletteRedBorder2, #e37d80);
+    --SlaTimer-foreground: var(--colorNeutralForeground1, #ffffff);
+    --SlaTimer-foreground-secondary: var(--colorNeutralForeground3, #adadad);
+    --SlaTimer-foreground-danger: var(--colorPaletteRedForeground1, #e37d80);
+    --SlaTimer-ok: var(--colorPaletteGreenForeground1, #54b054);
+    --SlaTimer-warning: var(--colorPaletteDarkOrangeForeground1, #e9835e);
+    --SlaTimer-overdue: var(--colorPaletteRedForeground1, #e37d80);
+}
+
+/*
+ * The field surface: Fluent's `filled-darker` Input, minus everything that
+ * belongs to an input.
+ *
+ * The fill, the radius and the 32px height stay, because they are what makes
+ * this line up with the fields above and below it on the form. The hover, the
+ * focus underline and the disabled surface are gone, and their absence is the
+ * point: nothing inside this box can be focused, clicked or typed into, so an
+ * affordance here would promise an interaction the control does not have. A
+ * `:focus-within` rule on a box with no focusable content is also dead CSS,
+ * which nothing in the build would have told us about.
+ */
+.SlaTimer .SlaTimer-field {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: var(--spacingHorizontalS, 8px);
+    box-sizing: border-box;
+    min-height: 32px;
+    padding: 0 var(--spacingHorizontalM, 12px);
+    border: 1px solid var(--SlaTimer-stroke);
+    border-radius: var(--SlaTimer-radius);
+    background-color: var(--SlaTimer-background);
+}
+
+/*
+ * Required, not belt-and-braces. `hidden` works by way of a UA rule
+ * `[hidden] { display: none }`, which any author `display` declaration beats on
+ * specificity — so the `display: flex` above would leave `field.hidden = true`
+ * rendering an empty grey bar where the field-level-security message should be
+ * the only thing on the form.
+ */
+.SlaTimer .SlaTimer-field[hidden] {
+    display: none;
+}
+
+/*
+ * The state label — "On track", "Due soon", "Overdue".
+ *
+ * It is rendered rather than implied, and that is an accessibility requirement
+ * rather than a preference: the colour beside it means nothing to a reader who
+ * cannot separate these three hues, and nothing at all under forced colours.
+ * The dot is decoration, and is marked as such by being drawn in CSS where no
+ * assistive technology will find it.
+ */
+.SlaTimer .SlaTimer-state {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacingHorizontalXS, 4px);
+    font-size: var(--SlaTimer-font-size-caption);
+    line-height: var(--SlaTimer-line-height-caption);
+    font-weight: var(--fontWeightSemibold, 600);
+    color: var(--SlaTimer-state-color, var(--SlaTimer-foreground-secondary));
+}
+
+.SlaTimer .SlaTimer-state::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.SlaTimer .SlaTimer-readout {
+    /*
+     * `0 1 auto`, not `1 1 auto`. The field fills the form column, and a
+     * readout allowed to grow pushes itself to the far edge of it — on a
+     * full-width form that leaves the state label and the number it describes
+     * at opposite ends of a very wide box, which is only visible on a form and
+     * not in a narrow harness.
+     *
+     * `min-width: 0` because a flex item's default `min-width: auto` refuses to
+     * shrink below its intrinsic width — which pushes the readout off a narrow
+     * form instead of narrowing it, and canvas apps put controls in genuinely
+     * narrow places.
+     */
+    flex: 0 1 auto;
+    min-width: 0;
+    font-size: var(--SlaTimer-font-size);
+    line-height: var(--SlaTimer-line-height);
+    font-weight: var(--fontWeightRegular, 400);
+    color: var(--SlaTimer-foreground);
+    /* A digital readout reflows as its digits change width, and a countdown
+       changes them once a second. Tabular figures hold the column still. */
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.SlaTimer--ok {
+    --SlaTimer-state-color: var(--SlaTimer-ok);
+}
+
+.SlaTimer--warning {
+    --SlaTimer-state-color: var(--SlaTimer-warning);
+}
+
+/* Overdue is the one state that colours the number as well as the label. It is
+   the only one that is a problem rather than a status. */
+.SlaTimer--overdue {
+    --SlaTimer-state-color: var(--SlaTimer-overdue);
+}
+
+.SlaTimer--overdue .SlaTimer-readout {
+    color: var(--SlaTimer-overdue);
+    font-weight: var(--fontWeightSemibold, 600);
+}
+
+/* `mode.isVisible` is false. Canvas relies on this; model-driven hides the
+   section itself, so this is the cheap half of supporting both. */
+.SlaTimer--hidden {
+    display: none;
+}
+
+/* The bound property reported `error` — a business rule the platform ran and
+   failed. Fluent colours all four borders for this. */
+.SlaTimer--invalid .SlaTimer-field {
+    border-color: var(--SlaTimer-stroke-invalid);
+}
+
+.SlaTimer .SlaTimer-message {
+    margin: var(--spacingVerticalXXS, 2px) 0 0;
+    font-family: inherit;
+    font-size: var(--SlaTimer-font-size-caption);
+    line-height: var(--SlaTimer-line-height-caption);
+    color: var(--SlaTimer-foreground-danger);
+}
+
+.SlaTimer .SlaTimer-message[hidden] {
+    display: none;
+}
+
+/*
+ * The polite live region. It carries the state transition and nothing else, so
+ * it must be available to a screen reader and invisible to everyone else.
+ *
+ * `display: none` and `visibility: hidden` both remove it from the
+ * accessibility tree along with the layout, which is the mistake that makes a
+ * live region silent. This is the clip-rect idiom, which leaves the text
+ * rendered — and therefore announced — in a 1px box nobody sees.
+ */
+.SlaTimer .SlaTimer-announcer {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+/*
+ * Forced colours collapse every tint to one of a handful of system keywords, so
+ * anything carrying meaning by colour has to carry it by shape or by text too
+ * — which is why the state label is words. The dot survives as a shape; the
+ * three hues do not survive at all, and should not be missed.
+ */
+@media (forced-colors: active) {
+    .SlaTimer .SlaTimer-field {
+        border-color: ButtonBorder;
+    }
+
+    .SlaTimer--invalid .SlaTimer-field {
+        border-color: Mark;
+    }
+
+    .SlaTimer .SlaTimer-state,
+    .SlaTimer--overdue .SlaTimer-readout {
+        color: CanvasText;
+    }
+}

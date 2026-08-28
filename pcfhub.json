@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+
+  "slug": "pcf-sla-timer",
+  "name": "SLA Timer",
+  "tagline": "A live countdown to a deadline column, with warning and overdue states.",
+  "category": "utilities",
+  "tags": [],
+
+  "control": {
+    "namespace": "PCFHub",
+    "constructor": "SlaTimer",
+    "type": "field",
+    "framework": "standard",
+    "manifestPath": "SlaTimer/ControlManifest.Input.xml"
+  },
+
+  "links": {
+    "homepage": "https://github.com/pcfhub/pcf-sla-timer",
+    "support": "https://github.com/pcfhub/pcf-sla-timer/issues",
+    "license": "MIT"
+  },
+
+  "docs": {
+    "path": "docs"
+  },
+
+  "media": {
+    "logo": "media/logo.png",
+    "screenshots": []
+  },
+
+  "demo": {
+    "fidelity": "full",
+    "bundle": "out/controls/SlaTimer/bundle.js",
+    "styles": ["out/controls/SlaTimer/css/SlaTimer.css"],
+    "presets": [
+      {
+        "slug": "on-track",
+        "name": "On track",
+        "description": "A deadline comfortably outside the warning threshold.",
+        "props": {
+          "deadline": "2030-06-01T17:00:00",
+          "warningMinutes": 60,
+          "display": "remaining"
+        },
+        "isDefault": true
+      },
+      {
+        "slug": "due-soon",
+        "name": "Due soon",
+        "description": "The warning state. A demo preset is static JSON and cannot hold a date twenty minutes from now, so this reaches the warning band the honest way — a very wide threshold rather than a faked clock.",
+        "props": {
+          "deadline": "2030-06-01T17:00:00",
+          "warningMinutes": 5256000,
+          "display": "remaining"
+        }
+      },
+      {
+        "slug": "overdue",
+        "name": "Overdue",
+        "description": "A deadline that has passed. The state is a word as well as a colour, which is what makes it readable in high contrast.",
+        "props": {
+          "deadline": "2026-01-15T09:30:00",
+          "warningMinutes": 60,
+          "display": "remaining"
+        }
+      },
+      {
+        "slug": "elapsed",
+        "name": "Elapsed, as digits",
+        "description": "The same overdue deadline with display set to elapsed — a running duration rather than a phrase, with the seconds moving.",
+        "props": {
+          "deadline": "2026-01-15T09:30:00",
+          "warningMinutes": 60,
+          "display": "elapsed"
+        }
+      },
+      {
+        "slug": "empty",
+        "name": "No deadline",
+        "description": "An empty column. It says so rather than showing a timer at zero, and stops the clock.",
+        "props": {
+          "deadline": null,
+          "warningMinutes": 60,
+          "display": "remaining"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<manifest>
+  <!--
+    The version here is what the Power Platform upgrades on, and the release
+    workflow refuses to publish a tag that disagrees with it. Bump this in the
+    same commit as the tag.
+  -->
+  <control namespace="PCFHub"
+           constructor="SlaTimer"
+           version="0.1.0"
+           display-name-key="SlaTimer_Name"
+           description-key="SlaTimer_Desc"
+           control-type="standard">
+
+    <!--
+      Leave this disabled unless the control calls a third-party service. A
+      control that declares external usage is treated as premium, and every
+      domain it talks to has to be listed.
+    -->
+    <external-service-usage enabled="false" />
+
+    <!--
+      PCFHub generates the component's API reference from this file, at the tag
+      of each release.
+
+      It records `display-name-key` and `description-key` *verbatim* — it does
+      not read the .resx — so a reader sees the key itself unless something
+      changes it. Two ways to get readable text: keep the keys themselves
+      readable, or correct them once in the hub's admin panel, where editing a
+      property locks that field so later syncs leave it alone.
+
+      The platform still resolves these against the .resx for the maker's
+      properties pane, so the keys must exist there either way.
+    -->
+
+    <!--
+      The deadline this control counts down to.
+
+      `bound` because it reads a column, and bound is the only usage that binds
+      one on a model-driven form. It is bound and never written: see
+      `getOutputs()` in index.ts, which returns an empty object on purpose.
+
+      `DateAndTime.DateAndTime` rather than `.DateOnly`: an SLA that expires at
+      midnight is a special case of one that expires at a time, and a DateOnly
+      column bound here still arrives as a Date whose local components are the
+      day the user means. The reverse — a DateOnly-typed property offered a
+      column with a time on it — is not bindable at all.
+    -->
+    <property name="deadline"
+              display-name-key="deadline_Name"
+              description-key="deadline_Desc"
+              of-type="DateAndTime.DateAndTime"
+              usage="bound"
+              required="true" />
+
+    <!--
+      How long before the deadline the control switches to its warning state.
+
+      A `default-value` reaches a real host as a number, but reaches PCFHub's
+      demo harness as the raw XML *string* — so every demo preset sets this
+      explicitly rather than relying on the default. See pcfhub.json.
+    -->
+    <property name="warningMinutes"
+              display-name-key="warningMinutes_Name"
+              description-key="warningMinutes_Desc"
+              of-type="Whole.None"
+              usage="input"
+              required="false"
+              default-value="60" />
+
+    <!--
+      `Enum` generates a real string union in generated/ManifestTypes.d.ts —
+      `EnumProperty<"remaining" | "elapsed">`, not a bare string. The union is
+      still a compile-time claim about a runtime the compiler does not control:
+      a canvas formula can supply anything, so index.ts reads it defensively.
+    -->
+    <property name="display"
+              display-name-key="display_Name"
+              description-key="display_Desc"
+              of-type="Enum"
+              usage="input"
+              required="false"
+              default-value="remaining">
+      <value name="remaining" display-name-key="display_Remaining">remaining</value>
+      <value name="elapsed" display-name-key="display_Elapsed">elapsed</value>
+    </property>
+
+    <resources>
+      <code path="index.ts" order="1" />
+      <css path="css/SlaTimer.css" order="1" />
+      <!--
+        Every language the control ships.
+
+        A .resx that exists on disk but is not listed here is not shipped, and
+        nothing warns — the file is simply never packed, and the control runs
+        in English for that locale while the repository looks translated.
+        `npm run check` catches both that and a key missing from a language.
+
+        Drop the ones you will not maintain. A stale translation is worse than
+        an honest fallback to English, and every key added to 1033 is a key
+        owed to each file listed here.
+
+        THE ORDER IS DELIBERATE AND 1033 GOES LAST. `pcf-start` picks the .resx
+        by manifest order rather than by locale: it reads whichever file is
+        listed *last* and ignores the LCID and the browser language entirely.
+        The platform itself ignores the order completely — a real app resolves
+        from the user's provisioned language — so `npm start` is the only thing
+        in the world that reads this order, and it is ordered for it. Listing
+        1033 first is the tidier-looking arrangement and it makes `npm start`
+        render the whole control in Japanese, which reads as a broken build.
+
+        The consequence to remember: ADD A NEW LANGUAGE ABOVE THIS LINE, not
+        below it. Appending a sixth file after 1033 silently moves the harness
+        to that language, and the symptom shows up in a `npm start` session
+        nobody connects to a manifest edit.
+      -->
+      <resx path="strings/SlaTimer.3082.resx" version="1.0.0" />
+      <resx path="strings/SlaTimer.1036.resx" version="1.0.0" />
+      <resx path="strings/SlaTimer.1031.resx" version="1.0.0" />
+      <resx path="strings/SlaTimer.1041.resx" version="1.0.0" />
+      <resx path="strings/SlaTimer.1033.resx" version="1.0.0" />
+    </resources>
+
+    <!--
+      No <feature-usage>. This control reads one column, a clock and the user's
+      locale, and calls neither WebAPI nor Utility nor Device — and every
+      feature declared here becomes a permission prompt for the maker
+      installing it. `npm run check` fails on a declared feature that is not
+      used, which is the right way round.
+    -->
+  </control>
+</manifest>

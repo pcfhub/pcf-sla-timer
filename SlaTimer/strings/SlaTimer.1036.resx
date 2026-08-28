@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    French (fr-FR, LCID 1036).
+
+    Keep the key set identical to SlaTimer.1033.resx. A key missing here does
+    not fall back to English — it renders as the key name, and only for users in
+    this language, so nobody who reads English ever sees it. `npm run check`
+    compares the two.
+
+    SLA Timer and A live countdown to a deadline column, with warning and overdue states. are filled by `npm run setup` with the English
+    title and tagline you gave it, because the template cannot know them. They
+    are the two values in this file worth translating by hand.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="SlaTimer_Name" xml:space="preserve">
+    <value>Minuteur de SLA</value>
+  </data>
+
+  <data name="SlaTimer_Desc" xml:space="preserve">
+    <value>Un compte à rebours en direct vers une colonne d'échéance, avec des états d'avertissement et de dépassement.</value>
+  </data>
+
+  <data name="deadline_Name" xml:space="preserve">
+    <value>Échéance</value>
+  </data>
+
+  <data name="deadline_Desc" xml:space="preserve">
+    <value>La date et l'heure vers lesquelles ce contrôle décompte. Lue, jamais écrite.</value>
+  </data>
+
+  <data name="warningMinutes_Name" xml:space="preserve">
+    <value>Seuil d'avertissement (minutes)</value>
+  </data>
+
+  <data name="warningMinutes_Desc" xml:space="preserve">
+    <value>Combien de minutes avant l'échéance le compte à rebours passe à son état d'avertissement.</value>
+  </data>
+
+  <data name="display_Name" xml:space="preserve">
+    <value>Affichage</value>
+  </data>
+
+  <data name="display_Desc" xml:space="preserve">
+    <value>Afficher le temps restant jusqu'à l'échéance, ou le temps écoulé depuis celle-ci.</value>
+  </data>
+
+  <data name="display_Remaining" xml:space="preserve">
+    <value>Temps restant</value>
+  </data>
+
+  <data name="display_Elapsed" xml:space="preserve">
+    <value>Temps écoulé</value>
+  </data>
+  <!-- Chaînes d'exécution, lues avec context.resources.getString(). -->
+  <data name="SlaTimer_NoAccess" xml:space="preserve">
+    <value>Vous n'avez pas accès à cette valeur.</value>
+  </data>
+
+  <data name="SlaTimer_NoDeadline" xml:space="preserve">
+    <value>Aucune échéance définie</value>
+  </data>
+
+  <data name="SlaTimer_StateOk" xml:space="preserve">
+    <value>Dans les temps</value>
+  </data>
+
+  <data name="SlaTimer_StateWarning" xml:space="preserve">
+    <value>Échéance proche</value>
+  </data>
+
+  <data name="SlaTimer_StateOverdue" xml:space="preserve">
+    <value>En retard</value>
+  </data>
+
+  <data name="SlaTimer_DueAt" xml:space="preserve">
+    <value>Échéance le {0}</value>
+  </data>
+</root>

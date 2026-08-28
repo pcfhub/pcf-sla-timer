@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Display names and descriptions for everything declared in
+    ControlManifest.Input.xml. PCFHub reads the manifest, so these strings are
+    what appear in the component's API reference on the hub as well as in the
+    maker's properties pane.
+
+    Copy this file to add a language — SlaTimer.3082.resx for Spanish, and so
+    on — then list it under <resources> in the manifest.
+  -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="SlaTimer_Name" xml:space="preserve">
+    <value>SLA Timer</value>
+  </data>
+
+  <data name="SlaTimer_Desc" xml:space="preserve">
+    <value>A live countdown to a deadline column, with warning and overdue states.</value>
+  </data>
+
+  <data name="deadline_Name" xml:space="preserve">
+    <value>Deadline</value>
+  </data>
+
+  <data name="deadline_Desc" xml:space="preserve">
+    <value>The date and time this control counts down to. Read, never written.</value>
+  </data>
+
+  <data name="warningMinutes_Name" xml:space="preserve">
+    <value>Warning threshold (minutes)</value>
+  </data>
+
+  <data name="warningMinutes_Desc" xml:space="preserve">
+    <value>How many minutes before the deadline the countdown switches to its warning state.</value>
+  </data>
+
+  <data name="display_Name" xml:space="preserve">
+    <value>Display</value>
+  </data>
+
+  <data name="display_Desc" xml:space="preserve">
+    <value>Whether to show the time remaining until the deadline, or the time elapsed since it.</value>
+  </data>
+
+  <data name="display_Remaining" xml:space="preserve">
+    <value>Time remaining</value>
+  </data>
+
+  <data name="display_Elapsed" xml:space="preserve">
+    <value>Time elapsed</value>
+  </data>
+  <!--
+    Runtime strings, read with context.resources.getString(). Anything the user
+    can read belongs here rather than as a literal in index.ts or as an input
+    property a maker hand-translates per instance.
+
+    The one deliberate exception is the relative phrasing the countdown itself
+    renders — "in 3 days", "2 hours ago". Plurals differ across these five
+    languages and a .resx cannot express them, so index.ts formats those with
+    Intl.RelativeTimeFormat seeded from userSettings.languageId. See SPEC.md.
+  -->
+  <data name="SlaTimer_NoAccess" xml:space="preserve">
+    <value>You do not have access to this value.</value>
+  </data>
+
+  <data name="SlaTimer_NoDeadline" xml:space="preserve">
+    <value>No deadline set</value>
+  </data>
+
+  <data name="SlaTimer_StateOk" xml:space="preserve">
+    <value>On track</value>
+  </data>
+
+  <data name="SlaTimer_StateWarning" xml:space="preserve">
+    <value>Due soon</value>
+  </data>
+
+  <data name="SlaTimer_StateOverdue" xml:space="preserve">
+    <value>Overdue</value>
+  </data>
+
+  <data name="SlaTimer_DueAt" xml:space="preserve">
+    <value>Due {0}</value>
+  </data>
+</root>
