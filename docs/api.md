@@ -31,6 +31,16 @@ by placing the component on a form.
 | `remaining` | Words, in the user's language: *in 3 days*, *42 minutes ago* |
 | `elapsed` | A digital readout of the gap's size: `3 d 04:12:30` |
 
+The same overdue deadline, said both ways — fourteen and a half hours past:
+
+::image{src=media/time-remaining-overdue.png alt="Overdue, 14 hours ago"}
+
+::image{src=media/time-elapsed-overdue.png alt="Overdue, 14:33:40"}
+
+`remaining` rounds to the unit a person would say out loud; `elapsed` keeps the
+seconds moving. Pick the first for a form somebody reads, the second for a
+screen somebody watches.
+
 Anything else is treated as `remaining`. This matters in a canvas app, where a
 formula can supply a string the manifest's enumeration does not list.
 

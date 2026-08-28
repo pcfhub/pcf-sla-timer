@@ -152,11 +152,17 @@ a reader is not left wondering.
 
 ## Not verified
 
-- **No model-driven form has run this.** Everything about `Behavior`,
-  `security.readable`, `mode.label` and the platform's own `formatting` output
-  comes from the type definitions and from `dev/host.js` standing in for them.
-  What would prove it: import the managed solution and put the control on a Case
-  form with a secured `Resolve By` column.
+- **A model-driven form has now run it, but only the happy path.** The solution
+  was imported and the control bound to an `SLA` column on a real form; the four
+  screenshots in `media/` are that, and they confirm the parts a stub cannot —
+  that `mode.label` arrives, that the field surface lines up with the form's own
+  fields, and that both display modes render and tick where a real
+  `FluentProvider` is publishing tokens above them.
+
+  What that run did **not** cover, and still has not: a column with a
+  field-level-security profile (`security.readable === false`), a business rule
+  failing on the column, a `Behavior: 2` (DateOnly) column, and any language
+  other than English. Those four branches remain `dev/host.js`'s word for it.
 - **`visibilitychange` is dispatched by this suite, not by a browser.** The
   control's response to it is asserted; that the browser fires it when a
   model-driven app is in a background tab is not. It was watched by hand in

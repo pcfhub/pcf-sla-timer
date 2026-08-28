@@ -47,6 +47,13 @@ announces. Nothing has to be configured for that.
   control and colours its border, the same as the built-in field would.
 - **An empty column.** Shows "No deadline set" and stops the clock.
 
+Past the deadline, on a form:
+
+::image{src=media/time-remaining-overdue.png alt="The SLA field reading: Overdue, 14 hours ago"}
+
+The state is a word as well as a colour, so it still reads in high-contrast mode
+and to anyone who cannot separate the three hues.
+
 ## Performance on a form with many of them
 
 Safe. Each control repaints itself on a timer, but the timer slows to one tick

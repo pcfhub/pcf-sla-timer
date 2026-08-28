@@ -27,7 +27,12 @@
 
   "media": {
     "logo": "media/logo.png",
-    "screenshots": []
+    "screenshots": [
+      "media/time-remaining.png",
+      "media/time-remaining-overdue.png",
+      "media/time-elapsed.png",
+      "media/time-elapsed-overdue.png"
+    ]
   },
 
   "demo": {

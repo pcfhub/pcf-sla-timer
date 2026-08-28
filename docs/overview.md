@@ -8,6 +8,8 @@ order: 1
 
 A live countdown to a deadline column, with warning and overdue states.
 
+::image{src=media/time-remaining.png alt="An SLA field on a model-driven form reading: On track, in 3 days" zoom}
+
 ## Why this one
 
 A date column renders as a date. That is the right answer for a date of birth
