@@ -46,6 +46,12 @@ made them agree would have one of them wrong. Verified by running
 dates the naive implementation passes too, which is exactly why the assertion
 carries a detail line saying so.
 
+⚠️ **CI is one of those zones.** GitHub runners are UTC, so the assertion passes
+there without ever exercising the branch it exists for — the run log carries the
+"this timezone has no DST here" detail line. Running the suite under a DST zone
+is a local step, and `build.yml` does not do it. Making CI set `TZ` for a second
+pass is the obvious fix and has not been done.
+
 **Months and years have no division to get wrong at all.** Once the day branch
 counts midnights, the natural extension is `magnitude / (30 * DAY)` — and a
 month is not a fixed number of milliseconds. Subtracting the two dates' own
@@ -159,9 +165,13 @@ a reader is not left wondering.
   right text at the right moment is asserted; that a screen reader announces it,
   and that `role="timer"` stays quiet in NVDA and JAWS as the specification
   says, has not been tested with one.
-- **The solution has not been packed.** `msbuild` was not run here, so the
-  production-mode bundle is unproven — a green `npm run build` is development
-  mode. CI does this on the first tag.
+- ~~**The solution has not been packed.**~~ Cleared by the first push: `build.yml`
+  ran msbuild on Windows and then the smoke suite against the packed bundle,
+  which is production mode. All 42 assertions pass there
+  ([run 33200959311](https://github.com/pcfhub/pcf-sla-timer/actions/runs/33200959311)),
+  and the shipping `bundle.js` is 5,447 bytes against the 5 MB web-resource
+  limit — a third of the 18.9 KB development build, which is minification and
+  not a measurement worth quoting anywhere permanent.
 
 ## Promoting a finding
 
