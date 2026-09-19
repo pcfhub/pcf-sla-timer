@@ -5,6 +5,7 @@
   "name": "SLA Timer",
   "tagline": "A live countdown to a deadline column, with warning and overdue states.",
   "category": "utilities",
+  "hosts": ["canvas", "model-driven"],
   "tags": [],
 
   "control": {
