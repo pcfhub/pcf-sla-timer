@@ -5,6 +5,8 @@ A live countdown to a deadline column, with warning and overdue states.
 [![Build](https://github.com/pcfhub/pcf-sla-timer/actions/workflows/build.yml/badge.svg)](https://github.com/pcfhub/pcf-sla-timer/actions/workflows/build.yml)
 [![Release](https://github.com/pcfhub/pcf-sla-timer/actions/workflows/release.yml/badge.svg)](https://github.com/pcfhub/pcf-sla-timer/actions/workflows/release.yml)
 
+[![Try it live on PCFHub](https://pcfhub.dev/badges/try-it-live.svg)](https://pcfhub.dev/components/pcf-sla-timer)
+
 Documentation lives on [PCFHub](https://pcfhub.dev/components/pcf-sla-timer), built
 from the `docs/` directory in this repository. Edit the Markdown here; the hub
 recompiles it.
