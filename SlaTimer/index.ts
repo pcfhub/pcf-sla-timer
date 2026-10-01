@@ -30,7 +30,14 @@ type State = 'ok' | 'warning' | 'overdue';
  * that and a clock reading. Nothing in `paint()` touches the platform.
  */
 interface Snapshot {
+    /** The moment the state turns overdue. For a whole day, the end of that day. */
     deadline: Date;
+    /**
+     * Local midnight of the due day, when the column holds a day rather than a
+     * moment — and `null` otherwise. A day is counted off the calendar and is
+     * never "in 6 hours": see `fromPlatform`.
+     */
+    day: Date | null;
     warningMs: number;
     display: 'remaining' | 'elapsed';
     locale: string;
@@ -72,6 +79,66 @@ const dayNumber = (date: Date): number =>
     Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / DAY;
 
 /**
+ * What the column holds, converted once on the way in.
+ *
+ * **`raw` does not put the moment in the same half of the `Date` for every
+ * behaviour.** A UserLocal column (1) hands over the true instant, and so does a
+ * host that publishes no metadata. A DateOnly column (2) and a
+ * TimeZoneIndependent one (3) hand over the day and the wall clock in the
+ * **UTC** components: "15 October" arrives as `2026-10-15T00:00:00Z`, which read
+ * locally is the evening of the 14th for every browser west of UTC. 0.1.0 read
+ * it locally, and on a real form in UTC-5 a loan due in fourteen days said
+ * "in 13 days" and one eleven days late said "12 days ago".
+ *
+ * So the UTC components are lifted into a local `Date` here, and everything
+ * after this point works in plain local time — `dayNumber`, the month and year
+ * arithmetic, and the comparison with `new Date()` all stay as they were.
+ *
+ * A **whole day** — a DateOnly column, or a TimeZoneIndependent one formatted
+ * as a date — has no time to count down to, so it is due *through* its last
+ * moment: on track or due soon all day, overdue from the midnight that ends it.
+ * That is the reading a person gives "due on the 15th", and it is why the
+ * returned deadline is the start of the following day while `day` stays on the
+ * day itself.
+ *
+ * A UserLocal column formatted as a date is deliberately not treated as a day:
+ * what it stores is an instant (midnight in the Dataverse user's zone), and the
+ * instant is what the control is handed. See docs/limitations.md.
+ */
+function fromPlatform(raw: Date, behavior: number, format: string): { deadline: Date; day: Date | null } {
+    if (behavior !== 2 && behavior !== 3) {
+        return { deadline: raw, day: null };
+    }
+
+    const wall = new Date(
+        raw.getUTCFullYear(),
+        raw.getUTCMonth(),
+        raw.getUTCDate(),
+        raw.getUTCHours(),
+        raw.getUTCMinutes(),
+        raw.getUTCSeconds(),
+    );
+
+    if (behavior === 3 && format !== 'date') {
+        return { deadline: wall, day: null };
+    }
+
+    const day = new Date(wall.getFullYear(), wall.getMonth(), wall.getDate());
+
+    return { deadline: new Date(day.getFullYear(), day.getMonth(), day.getDate() + 1), day };
+}
+
+/**
+ * Midday on a given day, for `context.formatting`.
+ *
+ * The formatters follow the Dataverse user's time zone, which is a separate
+ * setting from the browser's. A day handed over at local midnight is the day
+ * before for a user whose Dataverse zone is west of their browser's; at midday
+ * it survives almost twelve hours of disagreement either way.
+ */
+const atMidday = (day: Date): Date => new Date(day.getFullYear(), day.getMonth(), day.getDate(), 12);
+
+/**
  * "in 3 days", "42 minutes ago" — in the user's language, with its own plurals.
  *
  * This is the one place the control does not read its strings from the .resx,
@@ -87,20 +154,28 @@ const dayNumber = (date: Date): number =>
  * `dayNumber`. Compare `formatDuration`, which answers a genuinely different
  * question and is right to divide.
  */
-function formatRelative(remaining: number, now: Date, deadline: Date, locale: string): string {
+function formatRelative(remaining: number, now: Date, deadline: Date, locale: string, wholeDay: boolean): string {
     const format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' });
     const magnitude = Math.abs(remaining);
 
-    if (magnitude < MINUTE) {
-        return format.format(Math.trunc(remaining / SECOND), 'second');
-    }
+    /*
+     * A whole day never reads in hours. "Due on the 15th" is "today" all day on
+     * the 15th and "yesterday" on the 16th — `numeric: 'auto'` supplies both
+     * words — and "in 6 hours" would be a claim about a time the column does
+     * not hold.
+     */
+    if (!wholeDay) {
+        if (magnitude < MINUTE) {
+            return format.format(Math.trunc(remaining / SECOND), 'second');
+        }
 
-    if (magnitude < HOUR) {
-        return format.format(Math.trunc(remaining / MINUTE), 'minute');
-    }
+        if (magnitude < HOUR) {
+            return format.format(Math.trunc(remaining / MINUTE), 'minute');
+        }
 
-    if (magnitude < DAY) {
-        return format.format(Math.trunc(remaining / HOUR), 'hour');
+        if (magnitude < DAY) {
+            return format.format(Math.trunc(remaining / HOUR), 'hour');
+        }
     }
 
     const days = dayNumber(deadline) - dayNumber(now);
@@ -295,9 +370,9 @@ export class SlaTimer implements ComponentFramework.StandardControl<IInputs, IOu
          * wonder which of the two states it was meant to cover.
          */
 
-        const deadline = parameter.raw;
+        const raw = parameter.raw;
 
-        if (deadline === null) {
+        if (raw === null) {
             this.stop();
             this.field.hidden = true;
             this.message.hidden = false;
@@ -316,22 +391,26 @@ export class SlaTimer implements ComponentFramework.StandardControl<IInputs, IOu
          * at all. That single `?` is the whole canvas/model-driven difference:
          * narrow behaviour when it is present, do not require it.
          *
-         * `Behavior` is worth reading for exactly this — `formatTime` takes it
-         * — and for very little else. All three named behaviours hand over a
-         * Date whose *local* components are the moment the user means, so the
-         * arithmetic below needs no branch on it. `1` (UserLocal) is the
-         * assumption a host that publishes nothing is making anyway.
+         * `Behavior` decides which half of the `Date` holds the moment, and
+         * `fromPlatform` is the one place that branches on it. `1` (UserLocal)
+         * is the assumption a host that publishes nothing is making anyway.
          *
          * No cast: `attributes.Behavior` is already typed as the union
          * `formatTime` wants, so the `?? 1` fallback stays inside it. A cast
          * here would only be hiding the fact that it does.
+         *
+         * `Format` is `'date'` or `'datetime'` on a real form, lower-case; it is
+         * read defensively because the typings do not promise the casing.
          */
         const behavior = parameter.attributes?.Behavior ?? 1;
+        const format = String(parameter.attributes?.Format ?? '').toLowerCase();
+        const { deadline, day } = fromPlatform(raw, behavior, format);
 
         const languageId = context.userSettings.languageId;
 
         this.snapshot = {
             deadline,
+            day,
             // A canvas formula can hand back anything; `Number` on a null or a
             // string keeps the fallback rather than propagating NaN downstream.
             warningMs: Math.max(0, Number(context.parameters.warningMinutes.raw ?? 60) || 60) * MINUTE,
@@ -343,7 +422,12 @@ export class SlaTimer implements ComponentFramework.StandardControl<IInputs, IOu
                 .getString('SlaTimer_DueAt')
                 .replace(
                     '{0}',
-                    `${context.formatting.formatDateShort(deadline)} ${context.formatting.formatTime(deadline, behavior)}`,
+                    // A whole day has no time to show. `formatTime` is handed
+                    // `raw`, not the converted value: it takes the behaviour as
+                    // an argument precisely so it can read the right half itself.
+                    day !== null
+                        ? context.formatting.formatDateShort(atMidday(day))
+                        : `${context.formatting.formatDateShort(behavior === 3 ? atMidday(deadline) : raw)} ${context.formatting.formatTime(raw, behavior)}`,
                 ),
             labels: {
                 ok: context.resources.getString('SlaTimer_StateOk'),
@@ -380,12 +464,18 @@ export class SlaTimer implements ComponentFramework.StandardControl<IInputs, IOu
 
         const now = new Date();
         const remaining = snapshot.deadline.getTime() - now.getTime();
-        const state: State = remaining <= 0 ? 'overdue' : remaining <= snapshot.warningMs ? 'warning' : 'ok';
+        /*
+         * A whole day due today is due soon, whatever the threshold says. The
+         * threshold is in minutes, and a sixty-minute one would otherwise leave
+         * "due today" reading as on track until eleven at night.
+         */
+        const dueToday = snapshot.day !== null && dayNumber(snapshot.day) <= dayNumber(now);
+        const state: State = remaining <= 0 ? 'overdue' : dueToday || remaining <= snapshot.warningMs ? 'warning' : 'ok';
 
         this.readout.textContent =
             snapshot.display === 'elapsed'
                 ? formatDuration(Math.abs(remaining), snapshot.locale)
-                : formatRelative(remaining, now, snapshot.deadline, snapshot.locale);
+                : formatRelative(remaining, now, snapshot.day ?? snapshot.deadline, snapshot.locale, snapshot.day !== null);
 
         // The state label is rendered, not just coloured. Colour alone fails
         // anyone who cannot distinguish these three, and the dot beside it is

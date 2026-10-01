@@ -28,12 +28,26 @@ thing entirely. Redirect to a file and check `$?`, or do not pipe.
 
 ## Platform behaviour worth knowing
 
-**`Behavior` changes the tooltip and nothing else** — confirmed by an assertion
-rather than assumed. `dev/smoke.js` mounts the same deadline with `Behavior: 1`
-and `Behavior: 2` and asserts the countdown text is identical while the
-`formatTime` output differs. This is the skill's existing claim ("all three
-named behaviours hand over a Date whose local components are the calendar date
-the user means") turned into something that fails if it stops being true.
+**`Behavior` decides which half of the `Date` holds the moment — and 0.1.0 had
+this backwards.** It shipped the claim "all three named behaviours hand over a
+Date whose local components are the moment the user means", with an assertion
+that mounted one local Date under `Behavior: 1` and `Behavior: 2` and found the
+countdown identical. The assertion was true of the fixture and false of the
+platform: a DateOnly column hands over **UTC** midnight, so the fixture was a
+value no form produces.
+
+Found on a real model-driven form on 1 October 2026 (browser UTC-6, Dataverse
+user UTC-5), bound by force to a date-only column: a loan due 15 October read
+"in 13 days" and one due 20 September read "12 days ago", each a day early.
+0.2.0 converts once on the way in (`fromPlatform` in index.ts): UserLocal is the
+instant as before; DateOnly and TimeZoneIndependent are lifted out of the UTC
+components; a whole day is due through its last moment. The property is now a
+type group, so a date-only column binds without force.
+
+A mutation that reads the local components again fails eight assertions on a
+machine west of UTC, with the form's own wrong answers ("in 13 days", "12 days
+ago"). The skill's `references/dates.md` already had the measurement; this
+control predated reading it.
 
 **The daylight-saving bug has two sides, and only one of them is a bug.** The
 skill documents `(b - a) / 86400000` as wrong for counting days. Building this
@@ -161,8 +175,22 @@ a reader is not left wondering.
 
   What that run did **not** cover, and still has not: a column with a
   field-level-security profile (`security.readable === false`), a business rule
-  failing on the column, a `Behavior: 2` (DateOnly) column, and any language
-  other than English. Those four branches remain `dev/host.js`'s word for it.
+  failing on the column, and any language other than English. Those three
+  branches remain `dev/host.js`'s word for it.
+- **Two of the date branches rest on the rig alone.** A `Behavior: 2` (DateOnly)
+  column has run on a real form in both versions: 0.1.0 a day early, and 0.2.0
+  right — the same two loans read "in 14 days" and "11 days ago" on 1 October
+  2026, bound without force (browser UTC-6, Dataverse user UTC-5). The "today"
+  and "yesterday" states, and the midnight transition, are the rig's word only.
+  A **TimeZoneIndependent** column, as a moment or as a day, has not: its read
+  follows the measurement in the skill's `references/dates.md`, taken on another
+  control. Nor has a date-formatted **UserLocal** column, which 0.2.0 leaves as
+  an instant on purpose.
+- **Only two time zones have run the suite.** This machine (west of UTC, where
+  the date-only assertions bite) and `TZ=UTC` (where they pass without biting,
+  and say so). `TZ=Asia/Tokyo` and `TZ=America/New_York` were not honoured by
+  Node on Windows — the output showed the machine's own zone — so east of UTC is
+  reasoned, not run. CI is UTC.
 - **`visibilitychange` is dispatched by this suite, not by a browser.** The
   control's response to it is asserted; that the browser fires it when a
   model-driven app is in a background tab is not. It was watched by hand in

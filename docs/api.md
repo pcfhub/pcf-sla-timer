@@ -55,6 +55,7 @@ boundary:
 | --- | --- |
 | More than `warningMinutes` remain | On track |
 | `warningMinutes` or fewer remain, deadline not yet reached | Due soon |
+| A date-only deadline whose day is today | Due soon |
 | The deadline has been reached or passed | Overdue |
 
 **Languages.** The `.resx` ship 1033 English, 3082 Spanish, 1036 French, 1031

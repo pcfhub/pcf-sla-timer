@@ -56,9 +56,11 @@ date only, or as a timezone-independent value — is unavailable. The control
 assumes **UserLocal**, which is what the platform assumes for a date a canvas
 formula produced.
 
-The only consequence is the tooltip, where the absolute deadline is formatted.
-The countdown itself does not branch on `Behavior` at all: every behaviour hands
-over a date whose local components are the moment the user means.
+On a model-driven form the behaviour decides how the value is read: a date-only
+column is counted in whole days, and a time-zone-independent one is read off the
+wall clock. A canvas app gets neither — every value is treated as an instant —
+so a date-only column in a canvas app counts down to that day's midnight in
+hours and minutes, rather than reading "today" all day.
 
 :::callout{type=info}
 A canvas app also publishes no theme. The control's colours then come from its

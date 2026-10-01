@@ -361,20 +361,20 @@ check('takes no position on the theme when the host publishes none', !canvas.con
 check('and follows the host theme where there is one', mount({ host: 'model-driven', dark: true }).container.classList.contains('SlaTimer--dark'));
 
 /*
- * `Behavior` is the field every date control is told to branch on. All three
- * named values hand over a Date whose local components are the moment the user
- * means, so the countdown must not move when it changes. What it does change is
- * `formatTime`, which takes it as an argument — visible in the tooltip.
+ * `Behavior` decides which half of the Date holds the moment, and 0.1.0 got it
+ * wrong: it read every behaviour from the local components, and its suite
+ * "proved" that with a fixture the platform never produces (`behavior: 2` on a
+ * local Date). A UserLocal column still reads exactly as before; what it does
+ * to the other two is asserted under "the day that moves" below. Here, only
+ * what `formatTime` is for: it takes the behaviour as an argument.
  */
-const dateOnly = mount({ behavior: 2 });
+const independent = mount({ behavior: 3, deadline: new Date(Date.UTC(2026, 7, 28, 17, 0, 0)) });
 
 check(
-    'the countdown does not branch on Behavior',
-    dateOnly.text('.SlaTimer-readout') === plain.text('.SlaTimer-readout'),
-    `${dateOnly.text('.SlaTimer-readout')} vs ${plain.text('.SlaTimer-readout')}`,
+    'Behavior is passed to formatTime, with the value the platform handed over',
+    independent.find('.SlaTimer-field').title.includes(':b3'),
+    independent.find('.SlaTimer-field').title,
 );
-
-check('but it is passed to formatTime, which is what it is for', dateOnly.find('.SlaTimer-field').title.includes(':b2'), dateOnly.find('.SlaTimer-field').title);
 
 /*
  * Hidden is a state, not an absence. Canvas relies on `mode.isVisible` — a
@@ -546,6 +546,102 @@ check(
     springsForward ? duration === '2 days 23:00:00' : duration === '3 days 00:00:00',
     duration,
 );
+
+/*
+ * **The day that moved, on a real form.**
+ *
+ * A DateOnly column hands its day over at *UTC* midnight. Read from the local
+ * components, that is the previous evening for every browser west of UTC — and
+ * 0.1.0, bound to a date-only column in UTC-5, said "in 13 days" for a loan due
+ * in fourteen and "12 days ago" for one eleven days late. The day is in the UTC
+ * components, and the control now reads it there.
+ *
+ * The same asymmetry as the DST assertion above: this only bites west of UTC,
+ * so on a UTC runner the old code passes. The detail line says which this run is.
+ */
+const westOfUtc = new Date(2026, 9, 1, 9, 0, 0).getTimezoneOffset() > 0;
+const bites = westOfUtc ? '' : ' — this timezone is not west of UTC, so reading local components would also pass; run with TZ=America/Chicago to make this bite';
+
+const dueLater = at(new Date(2026, 9, 1, 9, 0, 0).getTime(), () => {
+    const mounted = mount({ behavior: 2, format: 'date', deadline: new Date(Date.UTC(2026, 9, 15)), warningMinutes: 2880 });
+
+    return { text: mounted.text('.SlaTimer-readout'), ok: mounted.container.classList.contains('SlaTimer--ok'), title: mounted.find('.SlaTimer-field').title };
+});
+
+check('a date-only column fourteen days away says fourteen', dueLater.text === 'in 14 days' && dueLater.ok, `${dueLater.text}${bites}`);
+
+check(
+    'and its tooltip is the day alone, with no time the column does not hold',
+    dueLater.title === 'resx:SlaTimer_DueAt fmt:date:2026-10-15',
+    dueLater.title,
+);
+
+const dueBefore = at(new Date(2026, 9, 1, 9, 0, 0).getTime(), () => {
+    const mounted = mount({ behavior: 2, format: 'date', deadline: new Date(Date.UTC(2026, 8, 20)) });
+
+    return { text: mounted.text('.SlaTimer-readout'), overdue: mounted.container.classList.contains('SlaTimer--overdue') };
+});
+
+check('one eleven days late says eleven, and is overdue', dueBefore.text === '11 days ago' && dueBefore.overdue, `${dueBefore.text}${bites}`);
+
+/*
+ * A whole day is due *through* its last moment. "Due on the 15th" is today, all
+ * day, on the 15th — never "in 6 hours", which would be a claim about a time
+ * the column does not hold — and it is overdue from the midnight that ends it.
+ */
+at(new Date(2026, 9, 15, 18, 0, 0).getTime(), () => {
+    const dueToday = mount({ behavior: 2, format: 'date', deadline: new Date(Date.UTC(2026, 9, 15)) });
+
+    check('a day due today says today, in the evening too', dueToday.text('.SlaTimer-readout') === 'today', dueToday.text('.SlaTimer-readout'));
+
+    check(
+        'and is due soon rather than overdue while the day lasts',
+        dueToday.container.classList.contains('SlaTimer--warning'),
+        dueToday.container.className,
+    );
+
+    time.advance(6 * 60 * 60 * 1000 + 1000);
+
+    check(
+        'it turns overdue at the midnight that ends the day',
+        dueToday.container.classList.contains('SlaTimer--overdue') && dueToday.text('.SlaTimer-readout') === 'yesterday',
+        `${dueToday.container.className} / ${dueToday.text('.SlaTimer-readout')}`,
+    );
+});
+
+/*
+ * TimeZoneIndependent keeps its wall clock in the UTC components too. A moment
+ * at 17:00 on the wall is 17:00 for every user, so against the suite's clock —
+ * 61 minutes before 17:00 local — it reads exactly as the UserLocal fixture does.
+ */
+const wallClock = mount({ behavior: 3, deadline: new Date(Date.UTC(2026, 7, 28, 17, 0, 0)) });
+
+check(
+    'a time-zone-independent moment is read from its UTC components',
+    wallClock.text('.SlaTimer-readout') === 'in 1 hour',
+    `${wallClock.text('.SlaTimer-readout')}${bites}`,
+);
+
+const independentDay = at(new Date(2026, 9, 1, 9, 0, 0).getTime(), () => {
+    const mounted = mount({ behavior: 3, format: 'date', deadline: new Date(Date.UTC(2026, 9, 15)) });
+
+    return mounted.text('.SlaTimer-readout');
+});
+
+check('and a time-zone-independent column formatted as a date is a whole day', independentDay === 'in 14 days', `${independentDay}${bites}`);
+
+/*
+ * UserLocal is untouched: it hands over the true instant, and so does a host
+ * that publishes no metadata. Asserted because the fix above is a branch, and a
+ * branch that swallowed the common case would be the worse bug.
+ */
+const instant = at(new Date(2026, 9, 1, 9, 0, 0).getTime(), () => {
+    const mounted = mount({ behavior: 1, format: 'date', deadline: new Date(2026, 9, 15, 0, 0, 0) });
+
+    return mounted.text('.SlaTimer-readout');
+});
+
+check('a UserLocal column is still an instant, whatever its format', instant === 'in 14 days', instant);
 
 /* --------------------------------------------------- what destroy owes */
 

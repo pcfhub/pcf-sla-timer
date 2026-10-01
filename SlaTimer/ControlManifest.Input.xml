@@ -7,7 +7,7 @@
   -->
   <control namespace="PCFHub"
            constructor="SlaTimer"
-           version="0.1.0"
+           version="0.2.0"
            display-name-key="SlaTimer_Name"
            description-key="SlaTimer_Desc"
            control-type="standard">
@@ -40,16 +40,27 @@
       one on a model-driven form. It is bound and never written: see
       `getOutputs()` in index.ts, which returns an empty object on purpose.
 
-      `DateAndTime.DateAndTime` rather than `.DateOnly`: an SLA that expires at
-      midnight is a special case of one that expires at a time, and a DateOnly
-      column bound here still arrives as a Date whose local components are the
-      day the user means. The reverse — a DateOnly-typed property offered a
-      column with a time on it — is not bindable at all.
+      A type group, because `of-type` gates on the column's *format* and a
+      deadline is as often a day as a moment. 0.1.0 declared
+      `DateAndTime.DateAndTime` alone, on the belief that a date-only column
+      "still arrives as a Date whose local components are the day the user
+      means". It does not: a DateOnly column arrives at UTC midnight, and a
+      maker who forced the binding in UTC-5 got a countdown one day early. So
+      both formats are declared, and index.ts (`fromPlatform`) reads each
+      behaviour from the half of the Date it actually lives in.
+
+      Widening is not a breaking change: every column 0.1.0 could bind is
+      still in the group.
     -->
+    <type-group name="deadlines">
+      <type>DateAndTime.DateAndTime</type>
+      <type>DateAndTime.DateOnly</type>
+    </type-group>
+
     <property name="deadline"
               display-name-key="deadline_Name"
               description-key="deadline_Desc"
-              of-type="DateAndTime.DateAndTime"
+              of-type-group="deadlines"
               usage="bound"
               required="true" />
 

@@ -163,11 +163,24 @@
         display: 'remaining',
         /**
          * `attributes.Behavior`: 0 None, 1 UserLocal, 2 DateOnly,
-         * 3 TimeZoneIndependent. All three named values hand over a Date whose
-         * local components are the moment the user means, so this is worth
-         * varying to prove the control does not branch on it.
+         * 3 TimeZoneIndependent.
+         *
+         * **The behaviour decides which half of `raw` holds the moment, and the
+         * fixture has to follow it.** UserLocal hands over the true instant.
+         * DateOnly and TimeZoneIndependent hand over the day and the wall clock
+         * in the *UTC* components — measured on a real form, where "15 October"
+         * arrived as `2026-10-15T00:00:00Z`. So a test that sets `behavior: 2`
+         * must build `deadline` with `Date.UTC(...)`: pairing it with a
+         * local-midnight Date is a value the platform never produces, and it is
+         * the pairing 0.1.0's suite used to "prove" the control need not branch.
          */
         behavior: 1,
+        /**
+         * `attributes.Format`: `'date'` or `'datetime'`, lower-case on a real
+         * form. It is what tells a TimeZoneIndependent day from a
+         * TimeZoneIndependent moment.
+         */
+        format: 'datetime',
         /** `userSettings.languageId`, which is what picks the Intl locale. */
         languageId: 1033,
         /** The maker's label for this field on this form. */
@@ -218,7 +231,7 @@
                      * this switch exists to find.
                      */
                     attributes: host.publishesMetadata
-                        ? { Behavior: o.behavior, LogicalName: 'slaresolveby', DisplayName: o.label }
+                        ? { Behavior: o.behavior, Format: o.format, LogicalName: 'slaresolveby', DisplayName: o.label }
                         : undefined,
                     /*
                      * `undefined` unless the column carries a field-level

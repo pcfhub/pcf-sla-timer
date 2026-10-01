@@ -32,6 +32,19 @@ Each of these is a constraint that was chosen, not a defect waiting on a fix.
   practice the fast cadence is already running well before any deadline
   arrives.
 
+- **A "Date only" column that behaves as User Local is an instant, not a day.**
+  The maker portal lets a column be *formatted* as a date while still *behaving*
+  as User Local, and that is the default for a column nobody changed. What it
+  stores is midnight in the Dataverse user's time zone, and that instant is what
+  the control is handed — so it counts down to midnight in hours on the day
+  before, and is overdue from the first moment of the due day rather than the
+  last. Set the column's behaviour to **Date only** to have it counted as a day;
+  note that the change is one-way and does not convert existing rows.
+
+- **In a canvas app a date-only deadline is an instant too.** A canvas app
+  publishes no column metadata, so the control cannot tell a day from a moment
+  there. See [Canvas](canvas.md).
+
 - **Five languages, then English.** The `.resx` ship English, Spanish, French,
   German and Japanese. A user provisioned in any other language sees English
   strings *and* English phrasing — the relative wording follows the same

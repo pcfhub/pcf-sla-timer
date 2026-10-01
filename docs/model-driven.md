@@ -17,14 +17,32 @@ order: 4
 
 ## Column types
 
-The bound property is `DateAndTime.DateAndTime`, so the component appears for:
+The bound property accepts both date formats (`DateAndTime.DateAndTime` and
+`DateAndTime.DateOnly`), so the component appears for:
 
-| Column | Behaviour | Notes |
+| Column format | Behaviour | What it counts to |
 | --- | --- | --- |
-| Date and Time, **User local** | Supported | The usual case for a deadline |
-| Date and Time, **Time-zone independent** | Supported | |
-| Date and Time, **Date only** | Supported | The deadline is midnight local, and the countdown says so |
-| Date only (no time) | Supported | Same as above |
+| Date and Time | **User local** | The moment. The usual case for a deadline |
+| Date and Time | **Time-zone independent** | The moment on the wall clock: 17:00 is 17:00 for every user |
+| Date only | **Date only** | The **day**. See below |
+| Date only | **Time-zone independent** | The **day**, the same way |
+| Date only | **User local** | An instant: midnight in the Dataverse user's time zone. See [Limitations](limitations.md) |
+
+### A column that holds a day
+
+A date-only deadline has no time to count down to, so the control counts
+calendar days and reads the way a person does:
+
+- **in 14 days**, **tomorrow**, **today**, **yesterday**, **11 days ago** — never
+  "in 6 hours".
+- It is **Due soon** all day on the due day, whatever the warning threshold, and
+  earlier than that once the end of the due day is within `warningMinutes`.
+- It turns **Overdue** at the midnight that ends the due day.
+- The tooltip shows the date alone.
+
+The count is right in every time zone. Version 0.1.0 could only be put on such a
+column by forcing the binding, and then read the day from the wrong half of the
+value: west of UTC it ran one day early. Upgrade to 0.2.0 if you did that.
 
 It does not offer itself for a Whole Number, Text or Choice column, and there is
 no configuration that would make it — the countdown needs a moment to count to.
