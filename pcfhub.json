@@ -4,6 +4,7 @@
   "slug": "pcf-sla-timer",
   "name": "SLA Timer",
   "tagline": "A live countdown to a deadline column, with warning and overdue states.",
+  "summary": "Shows a deadline column as the distance from now (in 3 days, in 42 minutes, 2 hours ago) beside a state: **On track**, **Due soon** or **Overdue**. It keeps counting while the form is open.\n\n- Phrased in the user's own language, with that language's plural rules\n- The state is a word as well as a colour\n- Display only: the column is read and never written, and no permissions are asked for",
   "category": "utilities",
   "hosts": ["canvas", "model-driven"],
   "tags": [],
