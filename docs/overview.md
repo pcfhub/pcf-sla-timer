@@ -8,6 +8,10 @@ order: 1
 
 A live countdown to a deadline column, with warning and overdue states.
 
+:::callout{type=warning}
+**Reference example · built with AI.** This control was written with AI (Claude) and tested on a live Dataverse form; its code has not been reviewed line by line. It is published as a worked example and is not maintained — read the source and [SPEC.md](https://github.com/pcfhub/pcf-sla-timer/blob/main/SPEC.md) (what was measured on the form) before you use it. Fixes are not guaranteed.
+:::
+
 ::image{src=media/time-remaining.png alt="An SLA field on a model-driven form reading: On track, in 3 days" zoom}
 
 ## Why this one

@@ -8,6 +8,8 @@
   "category": "utilities",
   "hosts": ["canvas", "model-driven"],
   "tags": [],
+  "supportLevel": "reference",
+  "builtWith": "ai",
 
   "control": {
     "namespace": "PCFHub",
