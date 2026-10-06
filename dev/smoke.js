@@ -358,6 +358,41 @@ check('renders on a host that publishes no column metadata', canvas.text('.SlaTi
 
 check('takes no position on the theme when the host publishes none', !canvas.container.classList.contains('SlaTimer--dark'), canvas.container.className);
 
+/*
+ * What a canvas app hands over, which 0.2.0 never met: `attributes` that
+ * describe no column and say `Behavior: 3` over a true instant. The assertion
+ * above ("in 1 hour") is the one that bites now — west of UTC, lifting the UTC
+ * clock out of that instant puts the deadline hours late. These pin the rest:
+ * a day the maker declared, the same value left as a moment, and a host with a
+ * column but no behaviour (PCFHub's demo harness).
+ */
+const canvasDay = mount({ host: 'canvas', deadline: new Date(2026, 7, 28), wholeDay: true });
+
+check('a canvas day the maker declared is due all day', canvasDay.text('.SlaTimer-readout') === 'today', canvasDay.text('.SlaTimer-readout'));
+
+check('and is not overdue until it ends', !canvasDay.container.classList.contains('SlaTimer--overdue'), canvasDay.container.className);
+
+const canvasMoment = mount({ host: 'canvas', deadline: new Date(2026, 7, 28) });
+
+check(
+    'the same canvas value without the declaration is a moment, already past',
+    canvasMoment.container.classList.contains('SlaTimer--overdue'),
+    canvasMoment.text('.SlaTimer-readout'),
+);
+
+const demoHarness = mount({ host: 'model-driven', behavior: undefined });
+
+check(
+    'a host with a column but no behaviour is read as the instant',
+    demoHarness.text('.SlaTimer-readout') === 'in 1 hour',
+    demoHarness.text('.SlaTimer-readout'),
+);
+
+check(
+    'and a UserLocal column ignores the whole-day declaration',
+    mount({ host: 'model-driven', behavior: 1, wholeDay: true }).text('.SlaTimer-readout') === 'in 1 hour',
+);
+
 check('and follows the host theme where there is one', mount({ host: 'model-driven', dark: true }).container.classList.contains('SlaTimer--dark'));
 
 /*

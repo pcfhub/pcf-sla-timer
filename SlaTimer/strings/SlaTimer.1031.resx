@@ -110,6 +110,14 @@
   <data name="display_Elapsed" xml:space="preserve">
     <value>Verstrichene Zeit</value>
   </data>
+
+  <data name="wholeDay_Name" xml:space="preserve">
+    <value>Fälligkeit ist ein ganzer Tag</value>
+  </data>
+
+  <data name="wholeDay_Desc" xml:space="preserve">
+    <value>In einer Canvas-App oder benutzerdefinierten Seite aktivieren, wenn die Fälligkeit ein Datum ohne Uhrzeit ist. Der Tag gilt dann bis zu seinem Ende als fällig. Ein modellgesteuertes Formular liest dies aus der Spalte.</value>
+  </data>
   <!-- Laufzeit-Zeichenfolgen, gelesen mit context.resources.getString(). -->
   <data name="SlaTimer_NoAccess" xml:space="preserve">
     <value>Sie haben keinen Zugriff auf diesen Wert.</value>

@@ -110,6 +110,14 @@
   <data name="display_Elapsed" xml:space="preserve">
     <value>Temps écoulé</value>
   </data>
+
+  <data name="wholeDay_Name" xml:space="preserve">
+    <value>L'échéance est un jour entier</value>
+  </data>
+
+  <data name="wholeDay_Desc" xml:space="preserve">
+    <value>À activer dans une application canevas ou une page personnalisée lorsque l'échéance est une date sans heure. Le jour compte alors jusqu'à sa fin. Un formulaire piloté par modèle le lit dans la colonne.</value>
+  </data>
   <!-- Chaînes d'exécution, lues avec context.resources.getString(). -->
   <data name="SlaTimer_NoAccess" xml:space="preserve">
     <value>Vous n'avez pas accès à cette valeur.</value>

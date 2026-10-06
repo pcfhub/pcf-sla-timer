@@ -41,9 +41,19 @@ Each of these is a constraint that was chosen, not a defect waiting on a fix.
   last. Set the column's behaviour to **Date only** to have it counted as a day;
   note that the change is one-way and does not convert existing rows.
 
-- **In a canvas app a date-only deadline is an instant too.** A canvas app
-  publishes no column metadata, so the control cannot tell a day from a moment
-  there. See [Canvas](canvas.md).
+- **In a canvas app you have to say that a deadline is a day.** A canvas app
+  describes every date the same way, so the control cannot tell a day from a
+  moment there. Turn on **Deadline is a whole day** for a date with no time;
+  left off, it counts down to the midnight that starts the day. See
+  [Canvas](canvas.md).
+
+- **In a canvas app the tooltip's date is formatted by the browser**, in the
+  user's language, not by the Dataverse user's own date format. The platform's
+  formatter is not used there because it rendered local midnight as noon.
+
+- **A custom page has not been measured.** It is a canvas host inside a
+  model-driven app and is expected to behave like a canvas app; nobody has
+  watched it do so yet.
 
 - **Five languages, then English.** The `.resx` ship English, Spanish, French,
   German and Japanese. A user provisioned in any other language sees English

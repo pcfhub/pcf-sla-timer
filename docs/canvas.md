@@ -20,6 +20,7 @@ order: 3
 | Deadline | `ThisItem.'Resolve By'` |
 | Warning threshold (minutes) | `60` |
 | Display | `"remaining"` |
+| Deadline is a whole day | `false` for a date and time, `true` for a date with no time |
 
 In a gallery over cases, that is the whole configuration:
 
@@ -48,19 +49,30 @@ a formula:
 If(ThisItem.'Resolve By' < Now(), "Overdue", "On track")
 ```
 
-## What a canvas app does not supply
+## A date with no time
 
-A canvas app publishes no column metadata, which for this control means one
-thing: `Behavior` — the flag saying whether the column is stored as UTC, as a
-date only, or as a timezone-independent value — is unavailable. The control
-assumes **UserLocal**, which is what the platform assumes for a date a canvas
-formula produced.
+A canvas app cannot tell the control whether a value is a moment or a day. It
+describes every date the same way, whatever column or formula it came from, so
+**you say which it is**:
 
-On a model-driven form the behaviour decides how the value is read: a date-only
-column is counted in whole days, and a time-zone-independent one is read off the
-wall clock. A canvas app gets neither — every value is treated as an instant —
-so a date-only column in a canvas app counts down to that day's midnight in
-hours and minutes, rather than reading "today" all day.
+| The deadline | Deadline is a whole day | What it shows |
+| --- | --- | --- |
+| A date and time (`'Resolve By'`, `Now()`, `DateAdd(...)`) | `false` | A countdown to that moment |
+| A date only (`'Due date'`, `Today()`, a date picker) | `true` | Whole days: "today" all day on the due day, overdue from the midnight that ends it |
+
+Left at `false`, a date-only value is counted down to the midnight that
+*starts* its day, and reads as overdue all through the day it is due.
+
+On a model-driven form the property does nothing: the column says what it
+holds, and the control follows the column.
+
+:::callout{type=warning}
+**Before 0.3.0 every canvas countdown was off by your offset from UTC.** The
+control read a canvas value the way it reads a time-zone-independent column,
+which a canvas value is not. Six hours west of UTC, a deadline thirty minutes
+away read "in 6 hours". If you corrected for that in a formula, remove the
+correction when you update. See [Migration](migration.md).
+:::
 
 :::callout{type=info}
 A canvas app also publishes no theme. The control's colours then come from its

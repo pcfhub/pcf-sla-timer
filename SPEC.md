@@ -49,6 +49,50 @@ machine west of UTC, with the form's own wrong answers ("in 13 days", "12 days
 ago"). The skill's `references/dates.md` already had the measurement; this
 control predated reading it.
 
+**A canvas app publishes `attributes` about nothing, and 0.2.0 believed it.**
+Every claim this repository made about canvas was that it publishes no column
+metadata: the control's comments, `dev/host.js`, `docs/canvas.md` and the
+skill's `references/dates.md` all say so. Read off a real canvas app on 6
+October 2026 (Studio preview and the published player, browser UTC-6), with a
+probe build that printed what `updateView` was handed for a Dataverse date-only
+column holding 6 October:
+
+```
+keys=DisplayName,LogicalName,Type,IsSecured,RequiredLevel,MinValue,MaxValue,ImeMode,MaxLength,...
+[Behavior, Format, LogicalName, EntityLogicalName, Type, SourceType, DisplayName, RequiredLevel]
+  = [3, "datetime", "deadline", "", "datetime", null, "deadline", 0]
+raw=2026-10-06T06:00:00.000Z ; typeof Xrm=undefined
+formatTime(raw, 1)="10/6/2026 12:00 PM" ; formatDateShort(raw)="10/6/2026"
+userSettings.getTimeZoneOffsetMinutes(raw)=360
+```
+
+and, for comparison, the same row on a model-driven form (Dataverse user UTC-5):
+
+```
+Behavior=2 ; raw=2026-10-06T00:00:00.000Z ; type=DateAndTime.DateOnly
+userSettings.getTimeZoneOffsetMinutes(raw)=-300 ; formatTime(raw, 1)="10/5/2026 7:00 PM"
+```
+
+So a canvas app says `Behavior: 3` and `Format: 'datetime'` for every date,
+names the property itself as the column, names no table, and hands over the
+**true instant** (local midnight for a date-only column). 0.2.0 took the `3`
+at its word and lifted the UTC clock out of the value, which put every canvas
+deadline late by the browser's offset: 00:00:00Z read 08:32:27 elapsed when
+14:32:31 had passed, `Now() + 30 minutes` read "in 6 hours", and a loan due
+today read "2 hours ago" at eight in the morning. 0.3.0 does not read
+`Behavior` where no column stands behind the value (`EntityLogicalName` empty
+*and* `LogicalName` equal to the property's own name), and adds `wholeDay` so
+the maker can say what the host cannot. Verified in the same app: "today", and
+"5 days ago" for a loan due 1 October.
+
+Three smaller things the same reading shows. `getTimeZoneOffsetMinutes` has the
+opposite sign on the two hosts (360 on canvas, -300 on the form, which is also
+the browser's zone against the Dataverse user's). `formatTime` on canvas
+rendered local midnight as noon, with the date in front, so the tooltip there
+is formatted with `Intl` instead. And the first attempt at this fix was written
+from the outside measurement alone ("the host shifts dates by the offset") and
+was wrong about the cause; the probe is what corrected it.
+
 **The daylight-saving bug has two sides, and only one of them is a bug.** The
 skill documents `(b - a) / 86400000` as wrong for counting days. Building this
 made the other half explicit: the `elapsed` readout *should* divide, because it
@@ -191,6 +235,12 @@ a reader is not left wondering.
   and say so). `TZ=Asia/Tokyo` and `TZ=America/New_York` were not honoured by
   Node on Windows — the output showed the machine's own zone — so east of UTC is
   reasoned, not run. CI is UTC.
+- **Canvas has run on one app, one browser, one zone.** 0.3.0 was watched in a
+  canvas app at UTC-6 with a date-only column, `Now()` and a UTC literal. East
+  of UTC, a **custom page**, a gallery of many timers, and the Power Apps mobile
+  player have not. `EntityLogicalName` on a model-driven form was not read by
+  the probe (the form kept serving a cached bundle); the canvas test requires
+  `LogicalName === 'deadline'` as well for that reason.
 - **`visibilitychange` is dispatched by this suite, not by a browser.** The
   control's response to it is asserted; that the browser fires it when a
   model-driven app is in a background tab is not. It was watched by hand in

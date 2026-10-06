@@ -110,6 +110,14 @@
   <data name="display_Elapsed" xml:space="preserve">
     <value>経過時間</value>
   </data>
+
+  <data name="wholeDay_Name" xml:space="preserve">
+    <value>期限は終日</value>
+  </data>
+
+  <data name="wholeDay_Desc" xml:space="preserve">
+    <value>期限が時刻のない日付の場合に、キャンバス アプリまたはカスタム ページでオンにします。その日が終わるまで期限内として扱われます。モデル駆動型フォームでは列から読み取ります。</value>
+  </data>
   <!-- context.resources.getString() で読み取る実行時の文字列。 -->
   <data name="SlaTimer_NoAccess" xml:space="preserve">
     <value>この値にアクセスする権限がありません。</value>

@@ -100,6 +100,15 @@
             label: 'canvas app',
             publishesTheme: false,
             publishesMetadata: false,
+            /*
+             * A canvas app does publish `attributes` — about nothing. Read off
+             * a real one on 6 October 2026: Behavior 3 and Format 'datetime'
+             * for every date, LogicalName the property's own name, an empty
+             * EntityLogicalName, and a `raw` that is the true instant. The
+             * rig's canvas host used to publish no `attributes` at all, which
+             * is how 0.2.0 shipped passing here and wrong in every canvas app.
+             */
+            describesNoColumn: true,
         },
     };
 
@@ -161,6 +170,8 @@
         warningMinutes: 60,
         /** `remaining` or `elapsed`. */
         display: 'remaining',
+        /** The maker's word that the deadline is a day, for a host that cannot say. */
+        wholeDay: false,
         /**
          * `attributes.Behavior`: 0 None, 1 UserLocal, 2 DateOnly,
          * 3 TimeZoneIndependent.
@@ -231,8 +242,10 @@
                      * this switch exists to find.
                      */
                     attributes: host.publishesMetadata
-                        ? { Behavior: o.behavior, Format: o.format, LogicalName: 'slaresolveby', DisplayName: o.label }
-                        : undefined,
+                        ? { Behavior: o.behavior, Format: o.format, LogicalName: 'slaresolveby', EntityLogicalName: 'incident', DisplayName: o.label }
+                        : host.describesNoColumn
+                          ? { Behavior: 3, Format: 'datetime', LogicalName: 'deadline', EntityLogicalName: '', DisplayName: 'deadline', Type: 'datetime' }
+                          : undefined,
                     /*
                      * `undefined` unless the column carries a field-level
                      * security profile — see SECURITY above. The common case is
@@ -246,6 +259,7 @@
                 },
                 warningMinutes: { raw: o.warningMinutes, type: 'Whole.None' },
                 display: { raw: o.display, type: 'Enum' },
+                wholeDay: { raw: o.wholeDay, type: 'TwoOptions' },
             },
 
             /*

@@ -110,6 +110,14 @@
   <data name="display_Elapsed" xml:space="preserve">
     <value>Tiempo transcurrido</value>
   </data>
+
+  <data name="wholeDay_Name" xml:space="preserve">
+    <value>La fecha límite es un día completo</value>
+  </data>
+
+  <data name="wholeDay_Desc" xml:space="preserve">
+    <value>Actívelo en una aplicación de lienzo o página personalizada cuando la fecha límite sea una fecha sin hora. El día cuenta como plazo hasta que termina. Un formulario basado en modelo lo lee de la columna.</value>
+  </data>
   <!-- Cadenas de tiempo de ejecución, leídas con context.resources.getString(). -->
   <data name="SlaTimer_NoAccess" xml:space="preserve">
     <value>No tiene acceso a este valor.</value>

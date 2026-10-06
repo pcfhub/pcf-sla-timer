@@ -104,10 +104,31 @@ const dayNumber = (date: Date): number =>
  * A UserLocal column formatted as a date is deliberately not treated as a day:
  * what it stores is an instant (midnight in the Dataverse user's zone), and the
  * instant is what the control is handed. See docs/limitations.md.
+ *
+ * **A canvas app is a third case, and 0.2.0 did not know it.** It was written
+ * believing a canvas app publishes no `attributes`. It publishes them, with
+ * `Behavior: 3` and `Format: 'datetime'` for every date, over a `raw` that is
+ * the true instant — so 0.2.0 lifted the UTC clock out of a value that never
+ * held a wall clock, and every canvas deadline landed late by the browser's
+ * UTC offset. `render` therefore passes `undefined` for a value with no column
+ * behind it, and the maker's `wholeDay` says what the host cannot.
  */
-function fromPlatform(raw: Date, behavior: number, format: string): { deadline: Date; day: Date | null } {
+function fromPlatform(
+    raw: Date,
+    behavior: number | undefined,
+    format: string,
+    wholeDay: boolean,
+): { deadline: Date; day: Date | null } {
     if (behavior !== 2 && behavior !== 3) {
-        return { deadline: raw, day: null };
+        // A column that says it is UserLocal holds an instant, whatever the
+        // maker set; `wholeDay` speaks only where no column says anything.
+        if (behavior === 1 || !wholeDay) {
+            return { deadline: raw, day: null };
+        }
+
+        const due = new Date(raw.getFullYear(), raw.getMonth(), raw.getDate());
+
+        return { deadline: new Date(due.getFullYear(), due.getMonth(), due.getDate() + 1), day: due };
     }
 
     const wall = new Date(
@@ -402,9 +423,28 @@ export class SlaTimer implements ComponentFramework.StandardControl<IInputs, IOu
          * `Format` is `'date'` or `'datetime'` on a real form, lower-case; it is
          * read defensively because the typings do not promise the casing.
          */
-        const behavior = parameter.attributes?.Behavior ?? 1;
+        /*
+         * Is there a column behind the value? On a form `attributes` describes
+         * the bound column: its table in `EntityLogicalName`, its own name in
+         * `LogicalName`. A canvas app and a custom page publish `attributes`
+         * too, but about nothing: `EntityLogicalName` is empty, `LogicalName`
+         * is this property's own name, and `Behavior` is `3` whatever the
+         * formula produced. Both conditions are required, so a form can never
+         * be mistaken for one. Read off a real canvas app on 6 October 2026:
+         * `[3,"datetime","deadline","","datetime"]` for Behavior, Format,
+         * LogicalName, EntityLogicalName and Type, over a `raw` of
+         * `2026-10-06T06:00:00.000Z` for a date-only column in a UTC-6 browser.
+         */
+        const described = (parameter.attributes ?? {}) as unknown as Record<string, unknown>;
+        const columnless = !described.EntityLogicalName && described.LogicalName === 'deadline';
+        const published = columnless ? undefined : parameter.attributes?.Behavior;
+        const behavior = published ?? 1;
         const format = String(parameter.attributes?.Format ?? '').toLowerCase();
-        const { deadline, day } = fromPlatform(raw, behavior, format);
+
+        // Compared with `true`: a canvas formula can hand back anything, and a
+        // harness may not supply the property at all.
+        const wholeDay = context.parameters.wholeDay?.raw === true;
+        const { deadline, day } = fromPlatform(raw, published, format, wholeDay);
 
         const languageId = context.userSettings.languageId;
 
@@ -425,9 +465,15 @@ export class SlaTimer implements ComponentFramework.StandardControl<IInputs, IOu
                     // A whole day has no time to show. `formatTime` is handed
                     // `raw`, not the converted value: it takes the behaviour as
                     // an argument precisely so it can read the right half itself.
-                    day !== null
-                        ? context.formatting.formatDateShort(atMidday(day))
-                        : `${context.formatting.formatDateShort(behavior === 3 ? atMidday(deadline) : raw)} ${context.formatting.formatTime(raw, behavior)}`,
+                    //
+                    // Where no column stands behind the value the platform's
+                    // formatters are not used: in a canvas app `formatTime`
+                    // rendered local midnight as "10/6/2026 12:00 PM".
+                    columnless
+                        ? new Intl.DateTimeFormat(LOCALES[languageId] ?? LOCALES[1033], day !== null ? { dateStyle: 'short' } : { dateStyle: 'short', timeStyle: 'short' }).format(day ?? deadline)
+                        : day !== null
+                          ? context.formatting.formatDateShort(atMidday(day))
+                          : `${context.formatting.formatDateShort(behavior === 3 ? atMidday(deadline) : raw)} ${context.formatting.formatTime(raw, behavior)}`,
                 ),
             labels: {
                 ok: context.resources.getString('SlaTimer_StateOk'),

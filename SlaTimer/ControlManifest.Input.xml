@@ -7,7 +7,7 @@
   -->
   <control namespace="PCFHub"
            constructor="SlaTimer"
-           version="0.2.0"
+           version="0.3.0"
            display-name-key="SlaTimer_Name"
            description-key="SlaTimer_Desc"
            control-type="standard">
@@ -95,6 +95,29 @@
       <value name="remaining" display-name-key="display_Remaining">remaining</value>
       <value name="elapsed" display-name-key="display_Elapsed">elapsed</value>
     </property>
+
+    <!--
+      Whether the deadline is a whole day rather than a moment, for a host that
+      cannot say.
+
+      On a model-driven form the column's own `Behavior` and `Format` answer
+      this, and the property is ignored for a column that publishes them. A
+      canvas app and a custom page publish no column metadata, so a date-only
+      column arrives there as local midnight with nothing marking it as a day:
+      0.2.0 counted it down to that midnight and called a loan due today
+      "2 hours ago" at eight in the morning. The maker is the only one who
+      knows, so the maker says.
+
+      `TwoOptions` rather than a third `display` value: it is a fact about the
+      column, not a choice of presentation, and it combines with both displays.
+    -->
+    <property name="wholeDay"
+              display-name-key="wholeDay_Name"
+              description-key="wholeDay_Desc"
+              of-type="TwoOptions"
+              usage="input"
+              required="false"
+              default-value="false" />
 
     <resources>
       <code path="index.ts" order="1" />
