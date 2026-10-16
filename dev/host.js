@@ -64,13 +64,24 @@
      * looks in production rather than throwing.
      */
     var STRINGS = {
-        SlaTimer_Name: 'SLA Timer',
-        SlaTimer_NoAccess: 'You do not have access to this field.',
-        SlaTimer_NoDeadline: 'No deadline set',
-        SlaTimer_StateOk: 'On track',
-        SlaTimer_StateWarning: 'Due soon',
-        SlaTimer_StateOverdue: 'Overdue',
-        SlaTimer_DueAt: 'Due {0}',
+        SlaTimer_Name: "SLA Timer",
+        SlaTimer_Desc: "A live countdown to a deadline column, with warning and overdue states.",
+        deadline_Name: "Deadline",
+        deadline_Desc: "The date and time this control counts down to. Read, never written.",
+        warningMinutes_Name: "Warning threshold (minutes)",
+        warningMinutes_Desc: "How many minutes before the deadline the countdown switches to its warning state.",
+        display_Name: "Display",
+        display_Desc: "Whether to show the time remaining until the deadline, or the time elapsed since it.",
+        display_Remaining: "Time remaining",
+        display_Elapsed: "Time elapsed",
+        wholeDay_Name: "Deadline is a whole day",
+        wholeDay_Desc: "Turn on in a canvas app or custom page when the deadline is a date with no time. The day then counts as due until it ends. A model-driven form reads this from the column.",
+        SlaTimer_NoAccess: "You do not have access to this value.",
+        SlaTimer_NoDeadline: "No deadline set",
+        SlaTimer_StateOk: "On track",
+        SlaTimer_StateWarning: "Due soon",
+        SlaTimer_StateOverdue: "Overdue",
+        SlaTimer_DueAt: "Due {0}",
     };
 
     /** Two digits, for the formatting stubs in `createContext`. */
